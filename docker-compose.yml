@@ -4,8 +4,9 @@ services:
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
-    ports:
-      - '27017:27018'
+    # Only expose ports in local development, not in CI
+    # ports:
+    #   - '27017:27017'
 
   backend:
     build:
@@ -13,7 +14,7 @@ services:
     depends_on:
       - mongo
     environment:
-      - MONGO_URI=mongodb://mongo:27018/inventory
+      - MONGO_URI=mongodb://mongo:27017/inventory
       - PORT=3000
     ports:
       - '3000:3000'
