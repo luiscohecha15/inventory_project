@@ -1,15 +1,14 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: /.*\.spec\.(ts|js|tsx|jsx)$/,
-  timeout: 30_000,
-  // Start the frontend dev server before running tests
-  // Tests expect a running frontend at PLAYWRIGHT_BASE_URL or http://localhost:5173.
-  // We do not start servers here; CI brings up services via docker compose.
+  timeout: 30 * 1000,
+  expect: {
+    timeout: 10 * 1000
+  },
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
     headless: true,
-    actionTimeout: 5000,
-  },
+    trace: 'on-first-retry'
+  }
 });

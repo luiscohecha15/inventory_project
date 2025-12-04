@@ -4,15 +4,9 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      mongo:
-        image: mongo:6
-        ports: ['27017:27017']
-        options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+
+    env:
+      PLAYWRIGHT_BASE_URL: http://frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -50,31 +44,35 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Build and start services with Docker Compose
-        run: |
-          docker compose up -d --build
+      # ==== DOCKER COMPOSE ====
+      - name: Docker Compose Build & Start
+        run: docker compose up -d --build
 
-      - name: Wait for services to be ready
+      - name: Wait for BACKEND (docker)
         run: |
           echo "Waiting for backend..."
           for i in $(seq 1 30); do
-            if curl -sSf http://localhost:3000/api/categories >/dev/null; then echo "Backend OK"; break; fi
+            if curl -sSf http://backend:3000/api/categories >/dev/null; then
+              echo "Backend OK"; exit 0;
+            fi
             sleep 2
           done
-          
+          echo "Backend FAIL"; exit 1
+
+      - name: Wait for FRONTEND (docker)
+        run: |
           echo "Waiting for frontend..."
           for i in $(seq 1 30); do
-            if curl -sSf http://localhost:5173 >/dev/null; then echo "Frontend OK"; break; fi
+            if curl -sSf http://frontend >/dev/null; then
+              echo "Frontend OK"; exit 0;
+            fi
             sleep 2
           done
+          echo "Frontend FAIL"; exit 1
 
-      - name: Run all tests (unit + e2e) inside containers
+      - name: Run tests inside Docker (unit + e2e + playwright)
         run: docker compose run --rm tests
 
-      - name: Tear down compose
+      - name: Down compose
         if: always()
         run: docker compose down -v
-
-      - name: Print OK if success
-        if: success()
-        run: echo "OK"
