@@ -4,9 +4,6 @@ services:
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
-    # Only expose ports in local development, not in CI
-    # ports:
-    #   - '27017:27017'
 
   backend:
     build:
@@ -36,7 +33,8 @@ services:
     depends_on:
       - backend
       - frontend
-    # do not auto-start when `docker compose up -d` is used; run with `docker compose run --rm tests`
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/inventory_test
     entrypoint: ["/workspace/docker/test-runner/run-tests.sh"]
 
 volumes:

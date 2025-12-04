@@ -11,7 +11,7 @@ describe("Categories (e2e)", () => {
 
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
-    const uri = mongod.getUri();
+    const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/inventory_test';
     await connect(uri);
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
