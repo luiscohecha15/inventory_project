@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:6
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - '27017:27017'
+
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/inventory
+      - PORT=3000
+    ports:
+      - '3000:3000'
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:3000/api
+    depends_on:
+      - backend
+    ports:
+      - '5173:80'
+
+  tests:
+    build:
+      context: .
+      dockerfile: docker/test-runner/Dockerfile
+    depends_on:
+      - backend
+      - frontend
+    # do not auto-start when `docker compose up -d` is used; run with `docker compose run --rm tests`
+    entrypoint: ["/workspace/docker/test-runner/run-tests.sh"]
+
+volumes:
+  mongo-data:

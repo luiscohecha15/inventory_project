@@ -5,15 +5,8 @@ export default defineConfig({
   testMatch: /.*\.spec\.(ts|js|tsx|jsx)$/,
   timeout: 30_000,
   // Start the frontend dev server before running tests
-  webServer: {
-    // Start backend and frontend in parallel using concurrently (installed as devDependency)
-    // --kill-others: stops the other process if one exits; --success first: consider success when the first process
-    command: 'npx concurrently "npm --prefix ../backend run start:dev" "npm run dev" --kill-others --success first',
-    url: 'http://localhost:5173',
-    cwd: __dirname,
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
+  // Tests expect a running frontend at PLAYWRIGHT_BASE_URL or http://localhost:5173.
+  // We do not start servers here; CI brings up services via docker compose.
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
     headless: true,
