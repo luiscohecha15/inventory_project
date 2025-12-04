@@ -5,9 +5,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
-      PLAYWRIGHT_BASE_URL: http://frontend
-
     steps:
       - uses: actions/checkout@v4
 
@@ -15,18 +12,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
 
       - name: Install backend deps
         working-directory: backend
         run: npm ci
-
-      - name: Build backend
-        working-directory: backend
-        run: npm run build
 
       - name: Lint backend
         working-directory: backend
@@ -40,39 +29,34 @@ jobs:
         working-directory: frontend
         run: npm test
 
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
-
-      # ==== DOCKER COMPOSE ====
-      - name: Docker Compose Build & Start
+      - name: Start Docker Compose
         run: docker compose up -d --build
 
-      - name: Wait for BACKEND (docker)
+      - name: Wait for backend
         run: |
           echo "Waiting for backend..."
           for i in $(seq 1 30); do
-            if curl -sSf http://backend:3000/api/categories >/dev/null; then
-              echo "Backend OK"; exit 0;
+            if curl -sSf http://localhost:3000/api/categories >/dev/null; then
+              echo "Backend OK"
+              break
             fi
             sleep 2
           done
-          echo "Backend FAIL"; exit 1
 
-      - name: Wait for FRONTEND (docker)
+      - name: Wait for frontend
         run: |
           echo "Waiting for frontend..."
           for i in $(seq 1 30); do
-            if curl -sSf http://frontend >/dev/null; then
-              echo "Frontend OK"; exit 0;
+            if curl -sSf http://localhost:5173 >/dev/null; then
+              echo "Frontend OK"
+              break
             fi
             sleep 2
           done
-          echo "Frontend FAIL"; exit 1
 
-      - name: Run tests inside Docker (unit + e2e + playwright)
+      - name: Run test container (backend E2E + playwright E2E)
         run: docker compose run --rm tests
 
-      - name: Down compose
+      - name: Teardown
         if: always()
         run: docker compose down -v

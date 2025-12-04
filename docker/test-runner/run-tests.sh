@@ -3,11 +3,10 @@ set -euo pipefail
 cd /workspace
 
 echo "=== System Info ==="
-uname -a
+uname -a || true
+
 echo "=== Available Disk Space ==="
-df -h /
-echo "=== Memory ==="
-free -h
+df -h / || true
 
 echo ""
 echo "Waiting for backend (backend:3000) to be ready..."
@@ -22,7 +21,8 @@ done
 
 echo "Waiting for frontend (frontend:80) to be ready..."
 for i in {1..60}; do
-  if curl -sS http://frontend >/dev/null 2>&1; then
+  # Verifica HTML válido, no solo conexión
+  if curl -sS http://frontend | grep -qi "<html"; then
     echo "Frontend ready"
     break
   fi
@@ -55,4 +55,3 @@ PLAYWRIGHT_BASE_URL=http://frontend npx playwright test -c playwright.config.ts 
 
 echo ""
 echo "All tests completed successfully!"
-
