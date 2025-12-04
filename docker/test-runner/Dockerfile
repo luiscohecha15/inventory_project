@@ -5,6 +5,7 @@ WORKDIR /workspace
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl gnupg libgtk-3-0 libx11-6 libxcomposite1 libxrandr2 libasound2 libnss3 libatk1.0-0 libatk-bridge2.0-0 libgbm1 libpangocairo-1.0-0 \
     libssl1.1 \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy repo into image
