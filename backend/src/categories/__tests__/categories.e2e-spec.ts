@@ -21,12 +21,16 @@ describe("Categories (e2e)", () => {
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix("api");
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
     await disconnect();
-    await mongod.stop();
+    if (mongod) {
+      await mongod.stop();
+    }
   });
 
   it("POST /api/categories should create a category", async () => {

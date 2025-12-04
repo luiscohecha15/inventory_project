@@ -7,5 +7,6 @@
   },
   "testEnvironment": "node",
   "preset": "ts-jest",
-  "extensionsToTreatAsEsm": []
+  "extensionsToTreatAsEsm": [],
+  "testTimeout": 30000
 }

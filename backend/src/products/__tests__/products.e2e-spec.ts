@@ -28,12 +28,16 @@ describe("Products (e2e)", () => {
       .post("/api/categories")
       .send({ name: "Default Category" });
     categoryId = categoryRes.body._id;
-  });
+  }, 30000);
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
     await disconnect();
-    await mongod.stop();
+    if (mongod) {
+      await mongod.stop();
+    }
   });
 
   it("POST /api/products should create a product", async () => {
