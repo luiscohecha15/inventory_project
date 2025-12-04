@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite run",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "react": "^18.0.0",
