@@ -30,13 +30,9 @@ jobs:
         working-directory: backend
         run: npm ci
 
-      - name: Run backend tests
+      - name: Build backend
         working-directory: backend
-        run: npm test
-
-      - name: Run backend E2E tests
-        working-directory: backend
-        run: npm run test:e2e
+        run: npm run build
 
       - name: Lint backend
         working-directory: backend
@@ -46,7 +42,7 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run frontend tests
+      - name: Run frontend unit tests
         working-directory: frontend
         run: npm test
 
@@ -58,29 +54,22 @@ jobs:
         run: |
           docker compose up -d --build
 
-      - name: Wait for frontend to be available
+      - name: Wait for services to be ready
         run: |
+          echo "Waiting for backend..."
           for i in $(seq 1 30); do
-            if curl -sSf http://localhost:5173 >/dev/null; then echo OK && break; fi
+            if curl -sSf http://localhost:3000/api/categories >/dev/null; then echo "Backend OK"; break; fi
+            sleep 2
+          done
+          
+          echo "Waiting for frontend..."
+          for i in $(seq 1 30); do
+            if curl -sSf http://localhost:5173 >/dev/null; then echo "Frontend OK"; break; fi
             sleep 2
           done
 
-      - name: Wait for backend API to be available
-        run: |
-          for i in $(seq 1 30); do
-            if curl -sSf http://localhost:3000/api/categories >/dev/null; then echo OK && break; fi
-            sleep 2
-          done
-
-      - name: Install Playwright browsers
-        working-directory: frontend
-        run: npx playwright install --with-deps
-
-      - name: Playwright E2E tests
-        working-directory: frontend
-        run: npx playwright test -c playwright.config.ts
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:5173
+      - name: Run all tests (unit + e2e) inside containers
+        run: docker compose run --rm tests
 
       - name: Tear down compose
         if: always()

@@ -20,21 +20,25 @@ for i in {1..30}; do
   sleep 2
 done
 
-echo "Running backend tests"
+echo "Running backend unit tests (excluding E2E)"
 cd /workspace/backend
 npm ci
 npm test
+
+echo "Running backend E2E tests (using docker mongo service)"
 npm run test:e2e
 
-echo "Running frontend tests"
+echo "Running frontend unit tests"
 cd /workspace/frontend
 npm ci
-# Install Playwright browsers (with deps)
-npx playwright install --with-deps
 npm test
 npm run build
+
+echo "Installing Playwright browsers"
+npx playwright install --with-deps
 
 echo "Running Playwright E2E inside test container against http://frontend"
 PLAYWRIGHT_BASE_URL=http://frontend npx playwright test -c playwright.config.ts || exit 1
 
 echo "All tests completed"
+
