@@ -9,4 +9,6 @@ module.exports = {
   testEnvironment: 'node',
   preset: 'ts-jest',
   extensionsToTreatAsEsm: [],
+  bail: false,
+  passWithNoTests: true,
 };
